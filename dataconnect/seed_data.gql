@@ -1,0 +1,65 @@
+mutation CreateDemoData @transaction @auth(level: USER, insecureReason: "This operation is for seeding data and should only be run by administrators.") {
+  user1: user_insert(data: {
+    id: "f3b3b3b3-b3b3-4b3b-8b3b-b3b3b3b3b3b3",
+    username: "coder1",
+    email: "coder1@example.com",
+    createdAt: "2023-01-01T00:00:00Z",
+    displayName: "Code Master 1",
+    bio: "Passionate about clean code.",
+    profilePictureUrl: "https://example.com/profile1.jpg"
+  })
+  user2: user_insert(data: {
+    id: "e2c2c2c2-c2c2-4c2c-8c2c-c2c2c2c2c2c2",
+    username: "devgirl",
+    email: "devgirl@example.com",
+    createdAt: "2023-01-02T00:00:00Z",
+    displayName: "Developer Girl",
+    bio: "Building amazing apps.",
+    profilePictureUrl: "https://example.com/profile2.jpg"
+  })
+  tag1: tag_insert(data: {
+    id: "d1a1a1a1-a1a1-4a1a-8a1a-a1a1a1a1a1a1",
+    name: "JavaScript"
+  })
+  tag2: tag_insert(data: {
+    id: "c0b0b0b0-b0b0-4b0b-8b0b-b0b0b0b0b0b0",
+    name: "Python"
+  })
+  snippet1: snippet_insert(data: {
+    id: "a9f9f9f9-f9f9-4f9f-8f9f-f9f9f9f9f9f9",
+    title: "Hello World in JS",
+    codeContent: "console.log('Hello, World!');",
+    language: "JavaScript",
+    isPublic: true,
+    createdAt: "2023-01-03T10:00:00Z",
+    updatedAt: "2023-01-03T10:00:00Z",
+    description: "A classic.",
+    authorId: "f3b3b3b3-b3b3-4b3b-8b3b-b3b3b3b3b3b3"
+  })
+  snippet2: snippet_insert(data: {
+    id: "b8e8e8e8-e8e8-4e8e-8e8e-e8e8e8e8e8e8",
+    title: "Python List Comprehension",
+    codeContent: "[x for x in range(10) if x % 2 == 0]",
+    language: "Python",
+    isPublic: true,
+    createdAt: "2023-01-04T11:00:00Z",
+    updatedAt: "2023-01-04T11:00:00Z",
+    description: "Elegant and concise.",
+    authorId: "e2c2c2c2-c2c2-4c2c-8c2c-c2c2c2c2c2c2"
+  })
+  comment1: comment_insert(data: {
+    id: "7d6d6d6d-6d6d-4d6d-8d6d-6d6d6d6d6d6d",
+    content: "Great snippet!",
+    createdAt: "2023-01-03T10:15:00Z",
+    authorId: "e2c2c2c2-c2c2-4c2c-8c2c-c2c2c2c2c2c2",
+    snippetId: "a9f9f9f9-f9f9-4f9f-8f9f-f9f9f9f9f9f9"
+  })
+  snippetTag1: snippetTag_insert(data: {
+    snippetId: "a9f9f9f9-f9f9-4f9f-8f9f-f9f9f9f9f9f9",
+    tagId: "d1a1a1a1-a1a1-4a1a-8a1a-a1a1a1a1a1a1"
+  })
+  snippetTag2: snippetTag_insert(data: {
+    snippetId: "b8e8e8e8-e8e8-4e8e-8e8e-e8e8e8e8e8e8",
+    tagId: "c0b0b0b0-b0b0-4b0b-8b0b-b0b0b0b0b0b0"
+  })
+}

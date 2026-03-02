@@ -1,0 +1,26 @@
+rules_version = '2';
+
+// Firestore Security Rules for CodeShare
+// Deploy via: firebase deploy --only firestore:rules
+// Or paste into Firebase Console → Firestore → Rules
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // User's own snippets — full CRUD for owner only
+    match /users/{userId}/snippets/{snippetId} {
+      allow read:   if true;                          // anyone can view (shared links)
+      allow create: if request.auth != null
+                    && request.auth.uid == userId;
+      allow update: if request.auth != null
+                    && request.auth.uid == userId;
+      allow delete: if request.auth != null
+                    && request.auth.uid == userId;
+    }
+
+    // Block everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

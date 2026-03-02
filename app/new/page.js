@@ -1,11 +1,11 @@
 "use client";
 import AuthGuard from "@/components/AuthGuard";
-import HomePage from "@/components/HomePage";
+import NewPage from "@/components/NewPage";
 
-export default function Home() {
+export default function NewSnippet() {
   return (
     <AuthGuard>
-      <HomePage />
+      <NewPage />
     </AuthGuard>
   );
 }

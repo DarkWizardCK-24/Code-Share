@@ -1,0 +1,46 @@
+mutation CreateUserSnippet($title: String!, $codeContent: String!, $language: String!, $isPublic: Boolean!, $description: String) @auth(level: USER, insecureReason: "This operation creates a snippet owned by the logged-in user.") {
+  snippet_insert(data: {
+    title: $title,
+    codeContent: $codeContent,
+    language: $language,
+    isPublic: $isPublic,
+    description: $description,
+    authorId_expr: "auth.uid",
+    createdAt_expr: "request.time",
+    updatedAt_expr: "request.time"
+  })
+}
+
+query GetPublicSnippets @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public as it only fetches public snippets.") {
+  snippets(where: {isPublic: {eq: true}}, orderBy: [{createdAt: DESC}]) {
+    id
+    title
+    description
+    language
+    createdAt
+    author {
+      id
+      username
+      displayName
+    }
+  }
+}
+
+query GetMySnippets @auth(level: USER, insecureReason: "This operation retrieves snippets owned by the currently authenticated user.") {
+  snippets(where: {authorId: {eq_expr: "auth.uid"}}, orderBy: [{updatedAt: DESC}]) {
+    id
+    title
+    language
+    isPublic
+    updatedAt
+  }
+}
+
+mutation AddCommentToSnippet($snippetId: UUID!, $content: String!) @auth(level: USER, insecureReason: "This operation allows logged-in users to comment on snippets.") {
+  comment_insert(data: {
+    snippetId: $snippetId,
+    content: $content,
+    authorId_expr: "auth.uid",
+    createdAt_expr: "request.time"
+  })
+}
