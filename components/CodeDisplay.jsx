@@ -27,6 +27,7 @@ import bash     from "react-syntax-highlighter/dist/esm/languages/hljs/bash";
 import json     from "react-syntax-highlighter/dist/esm/languages/hljs/json";
 import yaml     from "react-syntax-highlighter/dist/esm/languages/hljs/yaml";
 import md       from "react-syntax-highlighter/dist/esm/languages/hljs/markdown";
+import ini      from "react-syntax-highlighter/dist/esm/languages/hljs/ini";
 
 SyntaxHighlighter.registerLanguage("javascript", js);
 SyntaxHighlighter.registerLanguage("typescript", ts);
@@ -48,6 +49,7 @@ SyntaxHighlighter.registerLanguage("bash",       bash);
 SyntaxHighlighter.registerLanguage("json",       json);
 SyntaxHighlighter.registerLanguage("yaml",       yaml);
 SyntaxHighlighter.registerLanguage("markdown",   md);
+SyntaxHighlighter.registerLanguage("ini",        ini);
 
 export default function CodeDisplay({ code, language, filename, onDownload }) {
   const [copied, setCopied] = useState(false);

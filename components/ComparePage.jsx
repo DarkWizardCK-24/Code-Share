@@ -247,7 +247,7 @@ export default function ComparePage() {
           <div className="diff-container" style={{
             border: "1px solid var(--border)", borderRadius: 12, overflow: "hidden",
           }}>
-            <div style={{
+            <div className="diff-header-row" style={{
               display: "grid", gridTemplateColumns: "1fr 1fr",
               background: "#161B22", borderBottom: "1px solid var(--border2)",
             }}>

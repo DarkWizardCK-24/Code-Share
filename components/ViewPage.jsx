@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   FiCopy, FiCheck, FiDownload, FiShare2,
-  FiClock, FiCode, FiHash, FiLink, FiPlus, FiArrowLeft,
+  FiClock, FiCode, FiHash, FiLink, FiPlus, FiArrowLeft, FiFileText,
 } from "react-icons/fi";
 import { LANG_MAP } from "@/lib/languages";
 import { byId, timeAgo, downloadFile } from "@/lib/storage";
@@ -135,6 +135,31 @@ export default function ViewPage({ id }) {
             : <><FiCopy size={13} /> Copy</>}
         </button>
       </div>
+
+      {snippet.notes && (
+        <div style={{
+          background: "var(--bg2)",
+          border: "1px solid var(--border)",
+          borderRadius: 10,
+          padding: "16px 20px",
+          marginBottom: 20,
+        }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 7,
+            marginBottom: 10, color: "var(--t3)",
+            fontSize: 11, fontWeight: 700,
+            textTransform: "uppercase", letterSpacing: ".4px",
+          }}>
+            <FiFileText size={12} /> Notes &amp; Instructions
+          </div>
+          <p style={{
+            margin: 0, whiteSpace: "pre-wrap", fontSize: 13.5,
+            color: "var(--t2)", lineHeight: 1.7,
+          }}>
+            {snippet.notes}
+          </p>
+        </div>
+      )}
 
       <CodeDisplay
         code={snippet.code}

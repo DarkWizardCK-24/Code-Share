@@ -21,17 +21,27 @@ export default function HomePage() {
   useEffect(() => {
     if (!user) return;
     setLoading(true);
-    getAll(user.uid).then((data) => {
-      setSnippets(data);
-      setLoading(false);
-    });
+    getAll(user.uid)
+      .then((data) => {
+        setSnippets(data);
+      })
+      .catch((err) => {
+        console.error("Failed to load snippets:", err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, [user]);
 
   const handleDelete = async (id) => {
     if (!user) return;
-    await deleteById(user.uid, id);
-    const data = await getAll(user.uid);
-    setSnippets(data);
+    try {
+      await deleteById(user.uid, id);
+      const data = await getAll(user.uid);
+      setSnippets(data);
+    } catch (err) {
+      console.error("Failed to delete snippet:", err);
+    }
   };
 
   const langs = [...new Set(snippets.map((s) => s.language))];

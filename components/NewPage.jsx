@@ -3,7 +3,7 @@ import { useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   FiEdit3, FiEye, FiShare2, FiDownload,
-  FiArrowLeft, FiHash, FiCode, FiLayers,
+  FiArrowLeft, FiHash, FiCode, FiLayers, FiFileText,
 } from "react-icons/fi";
 import { LANG_MAP } from "@/lib/languages";
 import { uid, persist, downloadFile } from "@/lib/storage";
@@ -19,6 +19,7 @@ export default function NewPage() {
   const [filename, setFilename] = useState("");
   const [language, setLanguage] = useState("javascript");
   const [code,     setCode]     = useState("");
+  const [notes,    setNotes]    = useState("");
   const [tab,      setTab]      = useState("write");
   const [toast,    setToast]    = useState(null);
   const toastTimer = useRef(null);
@@ -58,6 +59,7 @@ export default function NewPage() {
       filename: filename.trim(),
       language,
       code,
+      notes: notes.trim(),
       createdAt: Date.now(),
     };
     await persist(user.uid, s);
@@ -99,6 +101,29 @@ export default function NewPage() {
           <label className="lbl"><FiLayers size={10} style={{ marginRight:3 }} />Language</label>
           <LangSelector value={language} onChange={setLanguage} />
         </div>
+      </div>
+
+      {/* ── Notes / Instructions ── */}
+      <div style={{ marginBottom:20 }}>
+        <label className="lbl" style={{ display:"flex", alignItems:"center", gap:4, marginBottom:6 }}>
+          <FiFileText size={10} style={{ marginRight:2 }} />Notes &amp; Instructions
+          <span style={{ color:"var(--t3)", fontWeight:400, fontSize:10, marginLeft:4 }}>(optional)</span>
+        </label>
+        <textarea
+          className="inp"
+          placeholder={"Describe how to use this snippet, setup steps, required dependencies, etc."}
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={3}
+          style={{
+            width: "100%",
+            resize: "vertical",
+            fontFamily: "inherit",
+            fontSize: 13,
+            lineHeight: 1.6,
+            minHeight: 72,
+          }}
+        />
       </div>
 
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
