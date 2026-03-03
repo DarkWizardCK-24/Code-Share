@@ -2,22 +2,25 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
-  FiCopy, FiCheck, FiDownload, FiShare2,
+  FiCopy, FiCheck, FiDownload, FiShare2, FiEdit3, FiTrash2, FiAlertTriangle,
   FiClock, FiCode, FiHash, FiLink, FiPlus, FiArrowLeft, FiFileText,
 } from "react-icons/fi";
 import { LANG_MAP } from "@/lib/languages";
-import { byId, timeAgo, downloadFile } from "@/lib/storage";
+import { getById, byId, deleteById, timeAgo, downloadFile } from "@/lib/storage";
 import { copyText } from "@/lib/clipboard";
+import { useAuth } from "./AuthContext";
 import CodeDisplay from "./CodeDisplay";
 import Toast from "./Toast";
 
 export default function ViewPage({ id }) {
   const router  = useRouter();
+  const { user } = useAuth();
   const [snippet,    setSnippet]    = useState(null);
   const [notFound,   setNotFound]   = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [codeCopied, setCodeCopied] = useState(false);
-  const [toast,      setToast]      = useState(null);
+  const [toast,        setToast]        = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const toastTimer = useRef(null);
 
   const showToast = useCallback((msg, type = "success") => {
@@ -27,11 +30,19 @@ export default function ViewPage({ id }) {
   }, []);
 
   useEffect(() => {
-    byId(id).then((s) => {
+    async function load() {
+      // Fast path: direct doc read when user is logged in
+      if (user) {
+        const s = await getById(user.uid, id);
+        if (s) { setSnippet(s); return; }
+      }
+      // Fallback: collectionGroup query for shared links
+      const s = await byId(id);
       if (s) setSnippet(s);
       else   setNotFound(true);
-    });
-  }, [id]);
+    }
+    load();
+  }, [id, user]);
 
   if (notFound) return (
     <div className="page-enter" style={{ maxWidth:600, margin:"80px auto", padding:"0 24px", textAlign:"center" }}>
@@ -71,6 +82,13 @@ export default function ViewPage({ id }) {
     showToast(`Downloaded as ${name}`);
   };
 
+  const handleDelete = async () => {
+    if (!user) return;
+    await deleteById(user.uid, snippet.id);
+    showToast("Snippet deleted!");
+    router.push("/");
+  };
+
   return (
     <div className="page-enter page-inner" style={{ maxWidth:1000, margin:"0 auto", padding:"36px 24px 80px" }}>
       <button className="btn btn-ghost" onClick={()=>router.push("/")} style={{ marginBottom:20 }}>
@@ -102,6 +120,20 @@ export default function ViewPage({ id }) {
         </div>
 
         <div className="snippet-actions" style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+          {user?.uid === snippet.ownerId && (
+            <>
+              <button className="btn btn-secondary" onClick={() => router.push(`/snippet/${snippet.id}/edit`)}>
+                <FiEdit3 size={14} /> Edit
+              </button>
+              <button
+                className="btn"
+                onClick={() => setConfirmDelete(true)}
+                style={{ background: "transparent", border: "1px solid #DA3633", color: "#FF7B72" }}
+              >
+                <FiTrash2 size={14} /> Delete
+              </button>
+            </>
+          )}
           <button className="btn btn-secondary" onClick={copyCode}>
             {codeCopied ? <FiCheck size={14} style={{ color:"var(--green)" }} /> : <FiCopy size={14} />}
             {codeCopied ? "Copied!" : "Copy Code"}
@@ -180,6 +212,50 @@ export default function ViewPage({ id }) {
           <FiPlus size={13} /> New Snippet
         </button>
       </div>
+
+      {/* Confirm delete overlay */}
+      {confirmDelete && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 999,
+          background: "rgba(0,0,0,.6)", backdropFilter: "blur(4px)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}
+          onClick={() => setConfirmDelete(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "var(--bg2)", border: "1px solid var(--border)",
+              borderRadius: 14, padding: "28px 32px", maxWidth: 380, width: "90%",
+              textAlign: "center", boxShadow: "0 24px 64px rgba(0,0,0,.5)",
+              animation: "popIn .15s ease both",
+            }}
+          >
+            <FiAlertTriangle size={28} style={{ color: "#FF7B72", marginBottom: 12 }} />
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: "var(--t1)", marginBottom: 8 }}>
+              Delete this snippet?
+            </h3>
+            <p style={{ fontSize: 13, color: "var(--t2)", marginBottom: 20, lineHeight: 1.6 }}>
+              This will permanently delete <strong style={{ color: "var(--t1)" }}>{snippet.title}</strong>. This action cannot be undone.
+            </p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+              <button className="btn btn-ghost" onClick={() => setConfirmDelete(false)} style={{ fontSize: 13, padding: "8px 20px" }}>
+                Cancel
+              </button>
+              <button
+                className="btn"
+                onClick={handleDelete}
+                style={{
+                  fontSize: 13, padding: "8px 20px",
+                  background: "#DA3633", color: "#fff", border: "1px solid #FF7B72",
+                }}
+              >
+                <FiTrash2 size={13} /> Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && <Toast msg={toast.msg} type={toast.type} />}
     </div>
