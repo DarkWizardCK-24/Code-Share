@@ -3,10 +3,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   FiPlus, FiZap, FiLayers, FiTerminal,
-  FiDownload, FiCode, FiGitBranch, FiSearch, FiBox,
-  FiChevronDown, FiChevronLeft, FiChevronRight, FiGrid, FiX,
+  FiDownload, FiCode, FiGitBranch, FiBox,
+  FiChevronLeft, FiChevronRight, FiGrid,
 } from "react-icons/fi";
-import { LANGUAGES, LANG_MAP } from "@/lib/languages";
+import { LANGUAGES } from "@/lib/languages";
 import { getAll, deleteById } from "@/lib/storage";
 import { useAuth } from "./AuthContext";
 import SnippetCard from "./SnippetCard";
@@ -15,15 +15,10 @@ export default function HomePage() {
   const router   = useRouter();
   const { user } = useAuth();
   const [snippets, setSnippets] = useState([]);
-  const [q,        setQ]        = useState("");
-  const [langFilter, setLangFilter] = useState("");
   const [loading,  setLoading]  = useState(true);
-  const [showAll,  setShowAll]  = useState(false);
-  const [langOpen, setLangOpen] = useState(false);
   const [canScrollL, setCanScrollL] = useState(false);
   const [canScrollR, setCanScrollR] = useState(false);
 
-  const langRef    = useRef(null);
   const scrollRef  = useRef(null);
 
   useEffect(() => {
@@ -46,22 +41,6 @@ export default function HomePage() {
   };
 
   const handleEdit = (id) => router.push(`/snippet/${id}/edit`);
-
-  /* ── Language filter dropdown ── */
-  const langs = [...new Set(snippets.map((s) => s.language))];
-  const filtered = snippets.filter((s) => {
-    const matchQ = !q || s.title.toLowerCase().includes(q.toLowerCase()) || s.code.toLowerCase().includes(q.toLowerCase());
-    const matchL = !langFilter || s.language === langFilter;
-    return matchQ && matchL;
-  });
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (langRef.current && !langRef.current.contains(e.target)) setLangOpen(false);
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
 
   /* ── Horizontal scroll state ── */
   const updateScrollButtons = useCallback(() => {
@@ -201,11 +180,11 @@ export default function HomePage() {
           {snippets.length > 0 && (
             <button
               className="btn btn-secondary"
-              onClick={() => setShowAll(!showAll)}
+              onClick={() => router.push("/snippets")}
               style={{ fontSize: 12.5, padding: "6px 14px" }}
             >
               <FiGrid size={13} />
-              {showAll ? "Carousel View" : "View All"}
+              View All
             </button>
           )}
         </div>
@@ -234,7 +213,7 @@ export default function HomePage() {
               <FiPlus size={15} /> Create Snippet
             </button>
           </div>
-        ) : !showAll ? (
+        ) : (
           /* ── Horizontal scroller ── */
           <div style={{ position: "relative" }}>
             {/* Left chevron */}
@@ -274,106 +253,6 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-        ) : (
-          /* ── Grid view (View All) ── */
-          <>
-            {/* Filters */}
-            <div className="filter-bar" style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom: 16 }}>
-              <div style={{ position:"relative", flex:"1 1 180px", minWidth: 0 }}>
-                <FiSearch style={{ position:"absolute", left:10, top:"50%", transform:"translateY(-50%)", color:"var(--t3)", fontSize:14 }} />
-                <input className="inp" placeholder="Search…" value={q} onChange={(e)=>setQ(e.target.value)} style={{ paddingLeft:32, width:"100%", fontSize:13 }} />
-              </div>
-              <div ref={langRef} style={{ position:"relative", flex:"0 1 180px", minWidth: 0 }}>
-                <button
-                  type="button"
-                  onClick={() => setLangOpen(!langOpen)}
-                  className="inp"
-                  style={{
-                    display:"flex", alignItems:"center", gap:8, width:"100%",
-                    fontSize:13, cursor:"pointer", textAlign:"left", padding:"8px 12px",
-                  }}
-                >
-                  {langFilter && LANG_MAP[langFilter] ? (
-                    <>
-                      <span style={{ color:LANG_MAP[langFilter].color, fontSize:14, display:"flex", flexShrink:0 }}>
-                        {(() => { const Icon = LANG_MAP[langFilter].icon; return <Icon />; })()}
-                      </span>
-                      <span style={{ flex:1, color:"var(--t1)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{LANG_MAP[langFilter].label}</span>
-                      <span
-                        onClick={(e) => { e.stopPropagation(); setLangFilter(""); setLangOpen(false); }}
-                        style={{ color:"var(--t3)", display:"flex", cursor:"pointer", flexShrink:0 }}
-                      >
-                        <FiX size={13} />
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span style={{ flex:1, color:"var(--t3)" }}>All languages</span>
-                      <FiChevronDown size={13} style={{ color:"var(--t3)", flexShrink:0 }} />
-                    </>
-                  )}
-                </button>
-                {langOpen && (
-                  <div style={{
-                    position:"absolute", top:"calc(100% + 4px)", left:0, right:0,
-                    zIndex:300, background:"var(--bg2)", border:"1px solid var(--border)",
-                    borderRadius:10, overflow:"hidden",
-                    boxShadow:"0 16px 48px rgba(0,0,0,.5)",
-                    animation:"popIn .15s ease both",
-                  }}>
-                    <div style={{ maxHeight:220, overflowY:"auto", padding:6 }}>
-                      <div
-                        className={`lang-option ${!langFilter ? "selected" : ""}`}
-                        onClick={() => { setLangFilter(""); setLangOpen(false); }}
-                      >
-                        All languages
-                      </div>
-                      {langs.map((l) => {
-                        const info = LANG_MAP[l];
-                        if (!info) return null;
-                        return (
-                          <div
-                            key={l}
-                            className={`lang-option ${langFilter === l ? "selected" : ""}`}
-                            onClick={() => { setLangFilter(l); setLangOpen(false); }}
-                          >
-                            <span style={{ color:info.color, fontSize:14, display:"flex", flexShrink:0 }}>
-                              <info.icon />
-                            </span>
-                            {info.label}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {filtered.length === 0 ? (
-              <div style={{
-                textAlign:"center", padding:"48px 20px",
-                background:"var(--bg2)", border:"1px dashed var(--border)", borderRadius:16,
-              }}>
-                <FiSearch size={24} style={{ color:"var(--t3)", marginBottom:12 }} />
-                <h3 style={{ fontWeight:700, fontSize:15, color:"var(--t1)", marginBottom:6 }}>No matching snippets</h3>
-                <p style={{ color:"var(--t2)", fontSize:13 }}>Try a different search or filter.</p>
-              </div>
-            ) : (
-              <div className="snip-grid">
-                {filtered.map((s, i) => (
-                  <div key={s.id} className="card-enter" style={{ animationDelay:`${i*40}ms` }}>
-                    <SnippetCard
-                      snippet={s}
-                      onClick={() => router.push(`/snippet/${s.id}`)}
-                      onDelete={handleDelete}
-                      onEdit={handleEdit}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
         )}
       </div>
     </div>

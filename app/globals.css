@@ -354,6 +354,8 @@ select.inp option {
   overflow: hidden;
   min-width: 0;
   max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 .snip-card::before {
   content: "";
@@ -400,6 +402,8 @@ select.inp option {
   flex: 0 0 220px;
   scroll-snap-align: start;
   min-width: 0;
+  max-width: 220px;
+  overflow: hidden;
 }
 
 /* ── Scroll chevron buttons ── */
@@ -485,6 +489,10 @@ select.inp option {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
   gap: 16px;
+}
+.snip-grid > * {
+  min-width: 0;
+  overflow: hidden;
 }
 
 /* ── Tab bar ── */
@@ -704,7 +712,7 @@ select.inp option {
   .snip-card:not(.snip-card-compact) { padding: 14px; }
 
   /* Scroller — smaller items on tablet */
-  .snip-scroll-item { flex: 0 0 200px; }
+  .snip-scroll-item { flex: 0 0 200px; max-width: 200px; }
   .scroll-chevron-left  { left: -6px; }
   .scroll-chevron-right { right: -6px; }
 
@@ -803,7 +811,7 @@ select.inp option {
   .snip-grid { gap: 10px; }
 
   /* Scroller — smaller items on mobile */
-  .snip-scroll-item { flex: 0 0 180px; }
+  .snip-scroll-item { flex: 0 0 180px; max-width: 180px; }
   .snip-card-compact { padding: 12px; }
   .scroll-chevron { width: 32px; height: 32px; }
   .scroll-chevron-left  { left: -4px; }
@@ -840,7 +848,7 @@ select.inp option {
   .hero-title     { font-size: 20px !important; }
   .hero-subtitle  { font-size: 12.5px !important; }
   .snip-card:not(.snip-card-compact) { padding: 10px; }
-  .snip-scroll-item { flex: 0 0 170px; }
+  .snip-scroll-item { flex: 0 0 170px; max-width: 170px; }
   .snip-card-compact { padding: 10px; }
   .stat-item      { padding: 8px 6px !important; }
   .lang-grid      { grid-template-columns: 1fr 1fr; }

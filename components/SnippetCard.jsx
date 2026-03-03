@@ -158,7 +158,7 @@ export default function SnippetCard({ snippet, onClick, onDelete, onEdit, compac
         </button>
       </div>
 
-      <div onClick={onClick} style={{ position: "relative", zIndex: 1 }}>
+      <div onClick={onClick} style={{ position: "relative", zIndex: 1, overflow: "hidden", minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
           <div style={{
             width: 36, height: 36, borderRadius: 8, flexShrink: 0,
@@ -208,7 +208,7 @@ export default function SnippetCard({ snippet, onClick, onDelete, onEdit, compac
             padding: "12px 14px", margin: 0,
             fontSize: 11.5, lineHeight: 1.65,
             color: "#8B949E", fontFamily: "var(--font-jetbrains), monospace",
-            overflow: "hidden", maxHeight: 80, whiteSpace: "pre",
+            overflow: "hidden", maxHeight: 80, whiteSpace: "pre-wrap",
             wordBreak: "break-all", textOverflow: "ellipsis",
           }}>
             {preview}
