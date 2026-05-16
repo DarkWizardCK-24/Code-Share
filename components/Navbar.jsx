@@ -3,7 +3,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { FiArrowLeft, FiPlus, FiCode, FiLogOut, FiLogIn, FiMenu, FiX } from "react-icons/fi";
 import Logo from "./Logo";
 import { useAuth } from "./AuthContext";
-import { logout } from "@/lib/auth";
+import { createClient } from "@/lib/supabase";
 import { getAll } from "@/lib/storage";
 import { useEffect, useState, useRef } from "react";
 
@@ -11,8 +11,7 @@ export default function Navbar() {
   const router   = useRouter();
   const pathname = usePathname();
   const isHome   = pathname === "/";
-  const isLogin  = pathname === "/login";
-  const { user, configured } = useAuth();
+  const { user } = useAuth();
   const [count, setCount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
@@ -34,8 +33,17 @@ export default function Navbar() {
   useEffect(() => { setMenuOpen(false); }, [pathname]);
 
   const handleLogout = async () => {
-    await logout();
-    router.push("/login");
+    const supabase = createClient();
+    await supabase.auth.signOut();
+  };
+
+  const handleLogin = () => {
+    const devfolioUrl = process.env.NEXT_PUBLIC_DEVFOLIO_URL || 'https://dev-folio-two-rho.vercel.app';
+    const callbackUrl = `${window.location.origin}/api/auth/devfolio-callback`;
+    window.location.href =
+      `${devfolioUrl}/api/auth/cross-app` +
+      `?redirect_to=${encodeURIComponent(callbackUrl)}` +
+      `&state=${encodeURIComponent(window.location.pathname)}`;
   };
 
   const nav = (path) => { router.push(path); setMenuOpen(false); };
@@ -47,6 +55,13 @@ export default function Navbar() {
 
         {/* ── Desktop nav ── */}
         <div className="nav-desktop" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <a
+            href={process.env.NEXT_PUBLIC_DEVFOLIO_URL || 'https://dev-folio-two-rho.vercel.app'}
+            className="btn btn-ghost"
+            style={{ fontSize: 12, padding: "5px 10px" }}
+          >
+            ↩ DevFolio
+          </a>
           {user && (
             <>
               {!isHome && (
@@ -86,29 +101,11 @@ export default function Navbar() {
               </div>
             </>
           )}
-          {!user && configured && !isLogin && (
-            <button className="btn btn-primary" onClick={() => router.push("/login")}>
+          {!user && (
+            <button className="btn btn-primary" onClick={handleLogin}>
               <FiLogIn size={14} />
               <span className="btn-text">Sign In</span>
             </button>
-          )}
-          {!user && !configured && (
-            <>
-              {!isHome && (
-                <button className="btn btn-ghost" onClick={() => router.push("/")}>
-                  <FiArrowLeft size={14} />
-                  <span className="btn-text">Snippets</span>
-                </button>
-              )}
-              <button className="btn btn-secondary" onClick={() => router.push("/compare")}>
-                <FiCode size={14} />
-                <span className="btn-text">Compare</span>
-              </button>
-              <button className="btn btn-primary" onClick={() => router.push("/new")}>
-                <FiPlus size={15} />
-                <span className="btn-text">New Snippet</span>
-              </button>
-            </>
           )}
         </div>
 
@@ -185,27 +182,15 @@ export default function Navbar() {
                 </>
               )}
 
-              {!user && configured && !isLogin && (
-                <button className="mobile-menu-item" onClick={() => nav("/login")}>
+              {!user && (
+                <button className="mobile-menu-item" onClick={() => { handleLogin(); setMenuOpen(false); }}>
                   <FiLogIn size={15} />
-                  <span>Sign In</span>
+                  <span>Sign In with GitHub</span>
                 </button>
               )}
-
-              {!user && !configured && (
-                <>
-                  {!isHome && (
-                    <button className="mobile-menu-item" onClick={() => nav("/")}>
-                      <FiArrowLeft size={15} />
-                      <span>Snippets</span>
-                    </button>
-                  )}
-                  <button className="mobile-menu-item" onClick={() => nav("/compare")}>
-                    <FiCode size={15} />
-                    <span>Compare Code</span>
-                  </button>
-                </>
-              )}
+              <a href={process.env.NEXT_PUBLIC_DEVFOLIO_URL || 'https://dev-folio-two-rho.vercel.app'} className="mobile-menu-item">
+                <span>↩ DevFolio</span>
+              </a>
             </div>
           )}
         </div>
