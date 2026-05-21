@@ -37,13 +37,12 @@ export default function Navbar() {
     await supabase.auth.signOut();
   };
 
-  const handleLogin = () => {
-    const devfolioUrl = process.env.NEXT_PUBLIC_DEVFOLIO_URL || 'https://dev-folio-two-rho.vercel.app';
-    const callbackUrl = `${window.location.origin}/api/auth/devfolio-callback`;
-    window.location.href =
-      `${devfolioUrl}/api/auth/cross-app` +
-      `?redirect_to=${encodeURIComponent(callbackUrl)}` +
-      `&state=${encodeURIComponent(window.location.pathname)}`;
+  const handleLogin = async () => {
+    const supabase = createClient();
+    await supabase.auth.signInWithOAuth({
+      provider: "github",
+      options: { redirectTo: `${window.location.origin}/api/auth/callback` },
+    });
   };
 
   const nav = (path) => { router.push(path); setMenuOpen(false); };

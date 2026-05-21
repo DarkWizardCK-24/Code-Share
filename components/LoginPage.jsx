@@ -2,14 +2,14 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { FiMail, FiLock, FiUser, FiLogIn } from "react-icons/fi";
-import { SiGoogle } from "react-icons/si";
-import { loginWithEmail, signupWithEmail, loginWithGoogle } from "@/lib/auth";
+import { SiGithub } from "react-icons/si";
+import { createClient } from "@/lib/supabase";
 import { useAuth } from "./AuthContext";
 import Toast from "./Toast";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, loading, configured } = useAuth();
+  const { user, loading } = useAuth();
   const [tab, setTab]           = useState("signin");
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
@@ -23,11 +23,6 @@ export default function LoginPage() {
     if (!loading && user) router.push("/");
   }, [user, loading, router]);
 
-  // If Firebase not configured, redirect home
-  useEffect(() => {
-    if (!configured) router.push("/");
-  }, [configured, router]);
-
   const clearForm = () => { setEmail(""); setPassword(""); setConfirm(""); setName(""); setError(null); };
 
   const handleSignIn = async (e) => {
@@ -35,14 +30,11 @@ export default function LoginPage() {
     if (!email || !password) { setError("Please fill in all fields."); return; }
     setSubmitting(true);
     setError(null);
-    try {
-      await loginWithEmail(email, password);
-      router.push("/");
-    } catch (err) {
-      setError(friendlyError(err.code));
-    } finally {
-      setSubmitting(false);
-    }
+    const supabase = createClient();
+    const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+    if (err) setError(err.message);
+    else router.push("/");
+    setSubmitting(false);
   };
 
   const handleSignUp = async (e) => {
@@ -52,25 +44,27 @@ export default function LoginPage() {
     if (password !== confirm) { setError("Passwords do not match."); return; }
     setSubmitting(true);
     setError(null);
-    try {
-      await signupWithEmail(email, password, name.trim());
-      router.push("/");
-    } catch (err) {
-      setError(friendlyError(err.code));
-    } finally {
-      setSubmitting(false);
-    }
+    const supabase = createClient();
+    const { error: err } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: name.trim() } },
+    });
+    if (err) setError(err.message);
+    else router.push("/");
+    setSubmitting(false);
   };
 
-  const handleGoogle = async () => {
+  const handleGitHub = async () => {
     setSubmitting(true);
     setError(null);
-    try {
-      await loginWithGoogle();
-      router.push("/");
-    } catch (err) {
-      setError(friendlyError(err.code));
-    } finally {
+    const supabase = createClient();
+    const { error: err } = await supabase.auth.signInWithOAuth({
+      provider: "github",
+      options: { redirectTo: `${window.location.origin}/api/auth/callback` },
+    });
+    if (err) {
+      setError(err.message);
       setSubmitting(false);
     }
   };
@@ -124,10 +118,10 @@ export default function LoginPage() {
           </button>
         </div>
 
-        {/* Google Sign In */}
-        <button className="btn btn-secondary" onClick={handleGoogle} disabled={submitting}
+        {/* GitHub Sign In */}
+        <button className="btn btn-secondary" onClick={handleGitHub} disabled={submitting}
           style={{ width: "100%", justifyContent: "center", padding: "10px 16px", marginBottom: 16 }}>
-          <SiGoogle size={14} /> Continue with Google
+          <SiGithub size={14} /> Continue with GitHub
         </button>
 
         <div style={{
@@ -184,20 +178,4 @@ export default function LoginPage() {
       </div>
     </div>
   );
-}
-
-function friendlyError(code) {
-  const map = {
-    "auth/invalid-email":           "Invalid email address.",
-    "auth/user-disabled":           "This account has been disabled.",
-    "auth/user-not-found":          "No account found with this email.",
-    "auth/wrong-password":          "Incorrect password.",
-    "auth/invalid-credential":      "Invalid email or password.",
-    "auth/email-already-in-use":    "An account with this email already exists.",
-    "auth/weak-password":           "Password is too weak. Use at least 6 characters.",
-    "auth/popup-closed-by-user":    "Sign-in popup was closed.",
-    "auth/network-request-failed":  "Network error. Check your connection.",
-    "auth/too-many-requests":       "Too many attempts. Please try again later.",
-  };
-  return map[code] || "Something went wrong. Please try again.";
 }
